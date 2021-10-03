@@ -1,0 +1,53 @@
+--- a/cpp/CMakeLists.txt
++++ b/cpp/CMakeLists.txt
+@@ -91,6 +91,21 @@ option ("BUILD_STATIC_LIB" "Build static libraries" "ON")
+ option ("USE_STDMUTEX" "Use C++ 2011 std::mutex for multi-threading" "OFF")
+ option ("USE_POSIX_THREAD" "Use Posix api for multi-threading" "OFF")
+
++if (WIN32)
++  add_definitions(-DBOOST_ALL_NO_LIB)
++  if (${DEFINE_PROTOBUF_SHARED})
++    add_definitions(-DPROTOBUF_USE_DLLS)
++  endif()
++endif()
++if (${DEFINE_BOOST_STATIC})
++  set (Boost_USE_STATIC_LIBS ON)
++endif()
++if (${DEFINE_ICU_STATIC})
++  add_definitions(-DU_STATIC_IMPLEMENTATION)
++endif()
++include_directories(${ICU_I18N_INCLUDE_DIR})
++set(ICU_LIB ${ICU_DATA_LIB} ${ICU_I18N_LIB} ${ICU_UC_LIB})
++
+ if (${USE_ALTERNATE_FORMATS} STREQUAL "ON")
+   add_definitions ("-DI18N_PHONENUMBERS_USE_ALTERNATE_FORMATS")
+ endif ()
+@@ -98,9 +113,6 @@ endif ()
+ # Find all the required libraries and programs.
+ if (${USE_BOOST} STREQUAL "ON")
+   add_definitions ("-DI18N_PHONENUMBERS_USE_BOOST")
+-  if (WIN32)
+-    set (Boost_USE_STATIC_LIBS ON)
+-  endif ()
+   find_package (Boost 1.40.0 COMPONENTS date_time system thread)
+   if (NOT Boost_FOUND)
+     print_error ("Boost Date_Time/System/Thread" "Boost")
+@@ -141,7 +153,6 @@ find_required_library (ICU_UC unicode/uchar.h icuuc "ICU")
+ check_library_version (PC_ICU_UC icu-uc>=4.4)
+
+ set (ICU_INCLUDE_DIR ${ICU_UC_INCLUDE_DIR})
+-set (ICU_LIB ${ICU_UC_LIB})
+ # If ICU regexp engine is used or if the geocoder is built, use icui18n as well.
+ if (${USE_ICU_REGEXP} STREQUAL "ON" OR ${BUILD_GEOCODER} STREQUAL "ON")
+   find_required_library (ICU_I18N unicode/regex.h icui18n "ICU")
+@@ -487,8 +498,8 @@ if (${BUILD_GEOCODER} STREQUAL "ON")
+   list (APPEND GEOCODER_DEPS ${COMMON_DEPS})
+   # Note that the subset of base/ on which the geocoder relies is implemented
+   # on top of Boost header-only libraries (e.g. scoped_ptr.hpp).
+-  target_link_libraries (geocoding ${LIBRARY_DEPS})
+-  target_link_libraries (geocoding-shared ${LIBRARY_DEPS})
++  target_link_libraries (geocoding phonenumber ${LIBRARY_DEPS})
++  target_link_libraries (geocoding-shared phonenumber-shared ${LIBRARY_DEPS})
+ endif ()
+
+ # Build a specific library for testing purposes.

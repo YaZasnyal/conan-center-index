@@ -1,4 +1,9 @@
 sources:
-  "8.12.18":
-    url: "https://github.com/google/libphonenumber/archive/v8.12.18.tar.gz"
-    sha256: "280fb7ff1a7019c825e33bb8540524873f60ac8f26dda4ad66106802034da60f"
+  "8.12.19":
+    url: "https://github.com/google/libphonenumber/archive/v8.12.19.tar.gz"
+    sha256: "3069686a4683db7d3dfdd023cc85e8a5436300cd8a6fa4b5c9d0bc652c2c86ac"
+
+patches:
+  "8.12.19":
+    - patch_file: "patches/win-allow-static-libs.patch"
+      base_path: "source_subfolder"
