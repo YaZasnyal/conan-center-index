@@ -1,0 +1,111 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 40e53a7..7fe445f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -268,12 +268,7 @@ check_cxx_source_compiles(
+ 	CPPCMS_HAVE_FSEEKI64
+ )
+ if(NOT DISABLE_GZIP)
+-	find_library(ZLIB NAMES z zdll zlib${ZLIB_SUFFIX} zlib)
+-	find_path(ZLIB_INCLUDE_DIR zlib.h)
+-	if(NOT ZLIB OR NOT ZLIB_INCLUDE_DIR)
+-		message(FATAL_ERROR "Can't fild zlib")
+-	endif()
+-	include_directories(${ZLIB_INCLUDE_DIR})
++	set(ZLIB CONAN_PKG::zlib)
+ endif()
+ 
+ 
+@@ -417,24 +412,12 @@ if(NOT DISABLE_TCPCACHE)
+ 		)
+ endif()
+ 
+-if(NOT DISABLE_GCRYPT)
+-	find_path(GCRYPT_INCLUDE_DIR gcrypt.h)
+-	find_library(LIB_GCRYPT gcrypt)
+-endif()
+-
+-if(NOT DISABLE_OPENSSL)
+-	find_path(OPENSSL_INCLUDE_DIR openssl/aes.h)
+-	find_library(LIB_OPENSSL NAMES crypto libcrypto libeay32)
+-endif()
+-
+-if (OPENSSL_INCLUDE_DIR AND LIB_OPENSSL)
+-	set(LIB_CRYPT ${LIB_OPENSSL})
++if (NOT DISABLE_OPENSSL)
++	set(LIB_CRYPT CONAN_PKG::openssl)
+ 	set(CPPCMS_HAVE_OPENSSL 1)
+-	include_directories(${OPENSSL_INCLUDE_DIR})
+-elseif(GCRYPT_INCLUDE_DIR AND LIB_GCRYPT)
+-	set(LIB_CRYPT ${LIB_GCRYPT})
++elseif(NOT DISABLE_GCRYPT)
++	set(LIB_CRYPT CONAN_PKG::gcrypt)
+ 	set(CPPCMS_HAVE_GCRYPT 1)
+-	include_directories(${GCRYPT_INCLUDE_DIR})
+ endif()
+ 
+ 
+diff --git a/booster/CMakeLists.txt b/booster/CMakeLists.txt
+index fa73579..0a4a945 100644
+--- a/booster/CMakeLists.txt
++++ b/booster/CMakeLists.txt
+@@ -130,14 +130,12 @@ if(NOT DISABLE_ICU_LOCALE)
+ 		endif()
+ 	endif()
+ 
+-	find_library(ICU_UC icuuc${ICU_SUFFIX})
+-	find_library(ICU_DATA NAMES icudt${ICU_SUFFIX} icudata)
+-	find_library(ICU_I18N NAMES icuin${ICU_SUFFIX} icui18n${ICU_SUFFIX})
+-	find_path(ICU_INCLUDE_DIR unicode/unistr.h)
++	set(ICU_UC CONAN_PKG::icu)
++	set(ICU_DATA ${ICU_UC})
++	set(ICU_I18N ${ICU_UC})
+ 
+-	if(ICU_UC AND ICU_DATA AND ICU_I18N AND ICU_INCLUDE_DIR)
++	if(ICU_UC AND ICU_DATA AND ICU_I18N)
+ 		message("-- ICU Found, building booster locale")
+-		include_directories(${ICU_INCLUDE_DIR})
+ 	else()
+ 		message("-- ICU not found, disabling ICU localization backend")
+ 		set(DISABLE_ICU_LOCALE ON)
+@@ -157,12 +155,8 @@ if(NOT DISABLE_ICONV)
+ 		 int main() { iconv_t v=iconv_open((char *)0,(char *)0); }"
+ 		 LIBC_ICONV)
+ 	if(NOT LIBC_ICONV)
+-		find_path(ICONV_INCLUDE_DIR iconv.h)
+-		find_library(ICONV_LIB iconv)
+-		if(ICONV_LIB AND ICONV_INCLUDE_DIR)
+-			set(BOOSTER_LOCALE_HAVE_ICONV 1)
+-			include_directories(${ICONV_INCLUDE_DIR})
+-		endif()
++		set(ICONV_LIB CONAN_PKG::libiconv)
++		set(BOOSTER_LOCALE_HAVE_ICONV 1)
+ 	else()
+ 		set(BOOSTER_LOCALE_HAVE_ICONV 1)
+ 	endif()
+@@ -538,24 +532,7 @@ endif()
+ 
+ 
+ 
+-find_path(PCRE_INCLUDE pcre.h)
+-if(PCRE_INCLUDE)
+-	include_directories(${PCRE_INCLUDE})
+-endif()
+-
+-if(NOT PCRE_INCLUDE)
+-	find_path(PCRE_INCLUDE2 pcre/pcre.h)
+-	include_directories(${PCRE_INCLUDE2}/pcre)
+-	if(NOT PCRE_INCLUDE2)
+-		message(FATAL_ERROR "Can't find PCRE include directory")
+-	endif()
+-
+-endif()
+-
+-find_library(PCRE_LIB NAMES pcre${PCRE_SUFFIX} pcre)
+-if(NOT PCRE_LIB)
+-	message(FATAL_ERROR "Can't find PCRE library")
+-endif()
++set(PCRE_LIB  CONAN_PKG::pcre)
+ 
+ 
+ 
